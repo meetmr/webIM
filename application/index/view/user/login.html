@@ -77,7 +77,8 @@
                     layer.closeAll('loading');
                     if (res.status != 'error') {
                         layer.msg(res.msg, {icon: 1});
-                        // setTimeout(window.location.href = '1', 3000);
+                        var url = "{:url('index/Index/index')}";
+                        setTimeout(window.location.href = url, 3000);
                     } else {
                         layer.alert(res.msg, {icon: 2});
                     }
