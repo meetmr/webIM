@@ -50,6 +50,13 @@ class User extends Controller
                 return json($return);
             }
 
+            // 更新登陆状态
+            UserModel::where('id', $user['id'])
+                ->update([
+                    'status'  => '1',
+                    'up_time' => time()
+                ]);
+
             // 存入Session
             session('user',$user);  // 写入session
             $return['msg'] = '登陆成功';

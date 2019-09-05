@@ -16,6 +16,7 @@ Route::get('think', function () {
 Route::get('hello/:name', 'index/hello');
 Route::get('login', 'index/user/index');
 Route::get('/', 'index/index/index');
+Route::get('getiniHomepage', 'index/Index/iniHomepage');
 
 return [
 
