@@ -12,6 +12,7 @@ use think\Controller;
 use think\facade\Request;
 use think\facade\Session;
 use app\index\model\UserInfo as UserModel;
+use think\response\Json;
 
 class User extends Controller
 {
@@ -22,6 +23,10 @@ class User extends Controller
         return $this->fetch('login');
     }
 
+    /**
+     * 登陆
+     * @return Json
+     */
     public function login(){
         $return = [
             'msg'   =>'',
@@ -44,7 +49,8 @@ class User extends Controller
                 return json($return);
             }
 
-            $user = UserModel::where(['username'=>$data['username'],'password'=>$data['pwd']])->find();
+            $user = UserModel::where(['username'=>$data['username'],'password'=>$data['pwd']])
+                ->find();
             if (empty($user)){
                 $return['msg'] = '账号密码错误';
                 return json($return);

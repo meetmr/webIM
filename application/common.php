@@ -156,6 +156,6 @@ function stripslashesAll($data){
 
 function dd($v){
     echo "<pre>";
-    var_dump($v);
+    print_r($v);
     die;
 }

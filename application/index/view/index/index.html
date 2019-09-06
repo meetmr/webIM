@@ -10,15 +10,14 @@
     <link href="/static/css/font-awesome.min.css" rel="stylesheet">
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/templatemo-style.css" rel="stylesheet">
-    <link href="/static/layui/css/layui.css" rel="stylesheet">
+    <link href="/static/layui/dist/css/layui.css" rel="stylesheet">
 </head>
 <body class="light-gray-bg">
 <div class="templatemo-content-widget templatemo-login-widget white-bg tp-8">
 </div>
 </body>
-<script type="text/javascript" src="/static/layui/layui.js"></script>
+<script type="text/javascript" src="/static/layui/dist/layui.js"></script>
 <script>
-
     layui.use('layim', function(layim){
         //基础配置
         layim.config({
@@ -64,6 +63,7 @@
             ,msgbox: layui.cache.dir + 'css/modules/layim/html/msgbox.html' //消息盒子页面地址，若不开启，剔除该项即可
             ,find: layui.cache.dir + 'css/modules/layim/html/find.html' //发现页面地址，若不开启，剔除该项即可
             ,chatLog: layui.cache.dir + 'css/modules/layim/html/chatlog.html' //聊天记录页面地址，若不开启，剔除该项即可
+
         });
 
         //监听在线状态的切换事件
