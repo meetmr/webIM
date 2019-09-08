@@ -1,9 +1,12 @@
 <?php
 namespace app\index\controller;
 use app\index\controller\Base;
+use app\index\model\GroupsToUser;
 use app\index\model\UserInfo as UserModel;
 use app\index\model\Grouping as GroupingModel;
 use app\index\model\Relation as RelationModel;
+use app\index\model\Groups as GroupsModel;
+use app\index\model\GroupsToUser as GroupsToUserModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
@@ -31,7 +34,7 @@ class Index extends Base
             'data'  =>[
                 'mine' => $this->getUserInfo(session('user.id')),
                 'friend'=>$this->getRelation(session('user.id')),
-                'group'=>[]
+                'group'=>$this->getGroupsToUserList(session('user.id'))
             ]
         ]);
     }
@@ -92,6 +95,50 @@ class Index extends Base
         return $friend;
     }
 
+    /**
+     * 获取我加入的群
+     * @param int $u_id
+     * @return array $friend
+     */
+    public function getGroupsToUserList($u_id){
+        if (empty($u_id) || !intval($u_id)){
+            $this->return_msg('10004','error','参数错误',[]);
+        }
+
+        $GroupsUserList = GroupsToUserModel::where(['ug_userID'=>$u_id])
+            ->order('ug_ime','desc')
+            ->order('id','desc')
+            ->field('ug_groupID')
+            ->select();
+
+        if (empty($GroupsUserList)){
+            return  [];
+        }
+
+        $groupsIdAraay = [];
+        foreach ($GroupsUserList as $value){
+            $groupsIdAraay[] = $value['ug_groupID'];
+        }
+
+        $groupsList = GroupsModel::where(['id'=>$groupsIdAraay])
+            ->order('time','desc')
+            ->order('id','desc')
+            ->select();
+
+        if (empty($groupsList)){
+            return [];
+        }
+
+        $groupsListInfo = [];
+        foreach ($groupsList as $value){
+            $groupsListInfo[] = [
+                'groupname' => $value['ug_name'],
+                'id' => $value['id'],
+                'avatar' => $value['ug_iCon'],
+            ];
+        }
+        return  $groupsListInfo;
+    }
 
     /**
      * 获取此分组下的好友
@@ -110,7 +157,7 @@ class Index extends Base
             $relationIdArray[] = $relationValue['friend_id'];
         }
 
-        $User = UserModel::where(['id'=>$relationIdArray,])
+        $User = UserModel::where(['id'=>$relationIdArray])
             ->order('status','desc')
             ->select();
 
