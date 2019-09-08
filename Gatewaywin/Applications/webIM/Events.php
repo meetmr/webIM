@@ -50,11 +50,44 @@ class Events
                if (!Gateway::isUidOnline($data['data']['uid'])){
                    // 进行登录绑定
                    Gateway::bindUid($client_id,$data['data']['uid']);
-                   $data  = [
+                   echo "用户 ".$data['data']['uid'] ."上线\n";
+                   // 绑定群组
+                   $gid = $data['data']['gid'];
+                   if (!empty($gid)){
+                       $groups = explode(',',$gid);
+                       if (!empty($groups) && is_array($groups)){
+                           foreach ($groups as $group){
+                               $ClientSessionsByGroup = Gateway::getClientSessionsByGroup($group);
+                               foreach ($ClientSessionsByGroup as $item){
+                                   if ($item == $client_id){
+                                       continue;
+                                   }
+                               }
+                               $return  = [
+                                   'type' => 'msg',
+                                   'data' => "用户：".$data['data']['uid']."上线:$group"
+                               ];
+                               echo "用户：".$data['data']['uid']."绑定群:$group\n";
+
+                               Gateway::joinGroup($client_id,$group);
+                               Gateway::sendToGroup($group,json_encode($return));
+                           }
+                       }
+                   }
+
+                   $return = [
                        'type' => 'msg',
                        'data' => "用户：".$data['data']['uid']."上线  client_id:$client_id"
                    ];
-                   Gateway::sendToAll(json_encode($data));
+
+                   Gateway::sendToAll(json_encode($return));
+               }else{
+                   $return = [
+                       'type' => 'msg',
+                       'data' => "用户：".$data['data']['uid']."s"
+                   ];
+
+                   Gateway::sendToAll(json_encode($return));
                }
 
                break;
@@ -63,7 +96,6 @@ class Events
                if (!Gateway::isUidOnline($data['data']['to']['id'])){
                    // 不在聊天线数据直接入库
                }
-
                // 在线的话转发给接收者
 
                // 获取发送者信息
@@ -71,21 +103,42 @@ class Events
                 // 接收者信息
                 $to = $data['data']['to'];
 
-                $return = [
-                   'emit' => 'chatMessage',
-                   'data' => [
-                       'username' =>  $mine['username'],
-                       'avatar'   =>  $mine['avatar'],
-                       'id'       =>  $mine['id'],
-                       'type'     =>  $to['type'],
-                       'content'  =>  $mine['content'],
-                       'cid'      =>  time(),
-                       'mine'     =>  false,
-                       'fromid'   =>  $mine['id'],
-                       'timestamp'=>  time() * 1000,
-                   ]
-               ];
-               Gateway::sendToUid($to['id'], json_encode($return));
+                // 私聊
+                if ($to['type'] == 'friend'){
+                    $return = [
+                        'emit' => 'chatMessage',
+                        'data' => [
+                            'username' =>  $mine['username'],
+                            'avatar'   =>  $mine['avatar'],
+                            'id'       =>  $mine['id'],
+                            'type'     =>  $to['type'],
+                            'content'  =>  $mine['content'],
+                            'cid'      =>  time(),
+                            'mine'     =>  false,
+                            'fromid'   =>  $mine['id'],
+                            'timestamp'=>  time() * 1000,
+                        ]
+                    ];
+                    Gateway::sendToUid($to['id'], json_encode($return));
+                }else if ($to['type'] == 'group'){ // 群聊
+                    $return = [
+                        'emit' => 'chatMessage',
+                        'data' => [
+                            'username' =>  $mine['username'],
+                            'avatar'   =>  $mine['avatar'],
+                            'id'       =>  $to['id'],
+                            'type'     =>  $to['type'],
+                            'content'  =>  $mine['content'],
+                            'cid'      =>  time(),
+                            'mine'     =>  false,
+                            'fromid'   =>  $mine['id'],
+                            'timestamp'=>  time() * 1000,
+                        ]
+                    ];
+                    Gateway::sendToGroup($to['id'],json_encode($return));
+
+                }
+
                break;
            default:
        }

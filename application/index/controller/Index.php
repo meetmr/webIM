@@ -10,6 +10,7 @@ use app\index\model\GroupsToUser as GroupsToUserModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
+use think\facade\Request;
 use think\response\Json;
 
 class Index extends Base
@@ -19,6 +20,10 @@ class Index extends Base
     ];
 
     public function index(){
+        $GroupsToUserListIDArray = $this->getjoinGroup(session('user.id'));
+        $this->assign([
+            'groups'  => implode(',',$GroupsToUserListIDArray),
+        ]);
         return $this->fetch();
     }
 
@@ -75,6 +80,77 @@ class Index extends Base
         return $groping = GroupingModel::where(['uid'=>$user_id])
             ->order('id','asc')
             ->select();
+    }
+
+    /**
+     * 获取群组
+     * @param int $user_id
+     * @return array
+     */
+
+    public function getjoinGroup($uid){
+        $GroupsToUserList = $this->getGroupsToUserList($uid);
+        if (empty($GroupsToUserList)){
+            return [];
+
+        }
+        $GroupsToUserListIDArray = [];
+        foreach ($GroupsToUserList as $value){
+            $GroupsToUserListIDArray[] = $value['id'];
+        }
+        return $GroupsToUserListIDArray;
+    }
+
+    /**
+     * 获取群组下的成员
+     * @param
+     * @return array $friend
+     */
+
+    //{
+    //"code": 0 //0表示成功，其它表示失败
+    //,"msg": "" //失败信息
+    //,"data": {
+    //"list": [{
+    //"username": "马小云" //群员昵称
+    //,"id": "168168" //群员id
+    //,"avatar": "http://tp4.sinaimg.cn/2145291155/180/5601307179/1" //群员头像
+    //,"sign": "让天下没有难写的代码" //群员签名
+    //}, …… ]
+    //  }
+    //}
+    public function getGroupUser(){
+        if (Request::isAjax()){
+            $return = [
+                'code' => 0,
+                'msg'  => '',
+                'data'  => [],
+
+            ];
+            $id = Request::get('id');
+            $GroupUserList = GroupsToUserModel::where(['ug_groupID'=>$id])
+                ->order('ug_ime','desc')
+                ->order('id','desc')
+                ->select();
+
+            if(empty($GroupUserList)){
+                return  json($return);
+
+            }
+
+            $GroupUserListArray = [];
+            foreach ($GroupUserList as $value){
+                $UserNameInfo = $this->getUserNameInfo($value['ug_userID']);
+                $GroupUserListArray['list'][] = [
+                    'username' => $UserNameInfo['name'],
+                    'id'       => $value['ug_userID'],
+                    'avatar' => $UserNameInfo['avatar'],
+                    'sign' => $UserNameInfo['sign'],
+                ];
+            }
+            $return['data'] = $GroupUserListArray;
+            return json($return);
+        }
     }
 
     /**
@@ -201,4 +277,21 @@ class Index extends Base
             ->value('status');
         return $status == 1 ? 'online' : 'offline';
     }
+
+
+    /**
+     * 通过用户信息
+     * @param int $user_id
+     * @return string
+     */
+    public function getUserNameInfo($user_id){
+        if (empty($user_id) || !is_numeric($user_id)){
+            return 'offline';
+        }
+        $userInfo = UserModel::where(['id'=>$user_id])
+            ->field('name,sign,avatar')
+            ->find();
+        return $userInfo;
+    }
+
 }

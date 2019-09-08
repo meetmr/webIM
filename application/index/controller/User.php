@@ -46,7 +46,8 @@ class User extends Controller
 
             if(!UserModel::where(['username'=>$data['username']])->find()){
                 $return['msg'] = '用户名没有注册';
-                return json($return);
+                echo json_encode($return);
+                die;
             }
 
             $user = UserModel::where(['username'=>$data['username'],'password'=>$data['pwd']])

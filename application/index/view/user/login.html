@@ -76,7 +76,7 @@
                 },
                 success: function (res) {
                     layer.closeAll('loading');
-                    if (res.status != 'error') {
+                    if (res.state != 'error') {
                         layer.msg(res.msg, {icon: 1});
                         var url = "{:url('index/Index/index')}";
                         setTimeout(window.location.href = url, 3000);
