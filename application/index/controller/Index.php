@@ -11,6 +11,7 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
 use think\facade\Request;
+use think\Request as RequestClass;
 use think\response\Json;
 
 class Index extends Base
@@ -280,7 +281,7 @@ class Index extends Base
 
 
     /**
-     * 通过用户信息
+     * 用户信息
      * @param int $user_id
      * @return string
      */
@@ -294,4 +295,30 @@ class Index extends Base
         return $userInfo;
     }
 
+    /**
+     * 上传图片接口
+     *
+     * @return array
+     */
+    public function uploadImg(){
+        $return = [
+            'code' => 1,
+            'msg' => '',
+            'data' => [],
+        ];
+        $file = Request::file('file');
+        $info = $file->move( '../public/static/uploads');
+        if($info){
+            // 成功上传后 获取上传信息
+            $finename= $info->getSaveName();
+            $return['code'] = 0;
+            $return['data'] = [
+                'src' => FILE_DOMAIN.$finename
+            ];
+            return json($return);
+        }else{
+            $return['msg'] = '上传出错';
+            return json($return);
+        }
+    }
 }

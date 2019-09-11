@@ -27,10 +27,14 @@ var webIm = {
     },
     // 发送消息入库
     sendMessageSave:function (res) {
+        // 转发给接收着
         socket.send(JSON.stringify({
             type: 'chatMessage' //随便定义，用于在服务端区分消息类型
             ,data: res
         }));
+
+        // 消息入库
+
         console.log(res);
     }
 };
