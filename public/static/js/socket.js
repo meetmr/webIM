@@ -25,16 +25,30 @@ var webIm = {
         //     ,timestamp: 12156565656 * 1000 //服务端时间戳毫秒数。注意：如果你返回的是标准的 unix 时间戳，记得要 *1000
         // });
     },
+
     // 发送消息入库
     sendMessageSave:function (res) {
         // 转发给接收着
-        socket.send(JSON.stringify({
-            type: 'chatMessage' //随便定义，用于在服务端区分消息类型
-            ,data: res
-        }));
-
         // 消息入库
-
+        $.ajax({
+            url:messageSaveUrl,
+            type:"post",
+            data:{data:res},
+            dataType:"json",
+            success:function (data) {
+                console.log(data);
+                if (data.code != 0){
+                    layer.msg(data.msg);
+                    return false;
+                }
+                // 通知接收者
+                socket.send(JSON.stringify({
+                    type: 'chatMessage'//随便定义，用于在服务端区分消息类型
+                    ,data: res
+                    ,cid:data.cid
+                }));
+            }
+        });
         console.log(res);
     }
 };

@@ -25,6 +25,7 @@
     var socket = new WebSocket('ws://127.0.0.1:8282');
     let layimy = null;
     let im_$ = $;
+    var messageSaveUrl =  "{:url('index/Index/messageSave')}"; // 消息入库
     socket.onopen = function(){
         layui.use('layim', function(layim){
             layimy = layim;

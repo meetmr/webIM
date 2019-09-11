@@ -113,7 +113,7 @@ class Events
                             'id'       =>  $mine['id'],
                             'type'     =>  $to['type'],
                             'content'  =>  $mine['content'],
-                            'cid'      =>  time(),
+                            'cid'      =>  intval($data['cid']) ,
                             'mine'     =>  false,
                             'fromid'   =>  $mine['id'],
                             'timestamp'=>  time() * 1000,

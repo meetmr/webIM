@@ -6,6 +6,7 @@ use app\index\model\UserInfo as UserModel;
 use app\index\model\Grouping as GroupingModel;
 use app\index\model\Relation as RelationModel;
 use app\index\model\Groups as GroupsModel;
+use app\index\model\Message as MessageModel;
 use app\index\model\GroupsToUser as GroupsToUserModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -297,7 +298,6 @@ class Index extends Base
 
     /**
      * 上传图片接口
-     *
      * @return array
      */
     public function uploadImg(){
@@ -319,6 +319,51 @@ class Index extends Base
         }else{
             $return['msg'] = '上传出错';
             return json($return);
+        }
+    }
+
+    /**
+     * 消息入库
+     * @return array
+     */
+    public function messageSave(){
+        $return = [
+            'code' =>1,
+            'msg' =>'',
+            'cid' =>'',
+        ];
+        if (Request::isAjax()){
+            $data = Request::post('data');
+
+            if (empty($data)){
+                $return['msg'] = "消息参数错误";
+                return json($return);
+            }
+
+            // 如果是单聊
+            if ($data['to']['type'] == 'friend'){
+                // 得到会话ID
+                $code = getCode($data['to']['id']);
+                $message = [
+                    'code' => $code,
+                    'fs_userid' => $data['mine']['id'],
+                    'js_userid' => $data['to']['id'],
+                    'message'   => $data['mine']['content'],
+                    'state'     => 0,
+                    'sendtime'  => time(),
+                ];
+                $meg = MessageModel::create($message);
+                if (empty($meg)){
+                    $return['msg'] = "消息保存失败";
+                    return json($return);
+                }
+                // 得到消息ID
+                $cid = $meg->id;
+                $return['code'] = 0;
+                $return['msg']  = '保存成功';
+                $return['cid'] = $cid;
+                return json($return);
+            }
         }
     }
 }

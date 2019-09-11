@@ -159,3 +159,10 @@ function dd($v){
     print_r($v);
     die;
 }
+
+//得到会话标识
+function getCode($touid){
+    $arr = array($touid, session('user.id'));
+    sort($arr);
+    return implode(',',$arr);
+}
