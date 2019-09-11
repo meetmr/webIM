@@ -26,6 +26,7 @@
     let layimy = null;
     let im_$ = $;
     var messageSaveUrl =  "{:url('index/Index/messageSave')}"; // 消息入库
+    var getChatRecordUrl =  "{:url('index/Index/getChatRecord')}"; // 消息入库
     socket.onopen = function(){
         layui.use('layim', function(layim){
             layimy = layim;
@@ -96,9 +97,7 @@
 
             // 聊天窗口切换
             layim.on('chatChange', function (res) {
-                // 获取聊天记录，res.data.id 是ID
-                console.log(res);
-                webIm.getChatRecord(res.data.id);
+                webIm.getChatRecord(res);
             });
 
             // 监听到消息

@@ -13,7 +13,6 @@ use think\facade\Request;
 use think\facade\Session;
 use app\index\model\UserInfo as UserModel;
 use think\response\Json;
-
 class User extends Controller
 {
     public function index(){
@@ -49,8 +48,8 @@ class User extends Controller
                 echo json_encode($return);
                 die;
             }
-            // 密码加密
-            $data['pwd'] = md5("WANGHENGBING_".$data['pwd']."_WEBIM");
+
+            $data['pwd'] = md5("WANGHENGBING_".$data['pwd'].'_WEBIM');
             $user = UserModel::where(['username'=>$data['username'],'password'=>$data['pwd']])
                 ->find();
             if (empty($user)){

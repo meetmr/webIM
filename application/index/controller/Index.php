@@ -109,18 +109,6 @@ class Index extends Base
      * @return array $friend
      */
 
-    //{
-    //"code": 0 //0表示成功，其它表示失败
-    //,"msg": "" //失败信息
-    //,"data": {
-    //"list": [{
-    //"username": "马小云" //群员昵称
-    //,"id": "168168" //群员id
-    //,"avatar": "http://tp4.sinaimg.cn/2145291155/180/5601307179/1" //群员头像
-    //,"sign": "让天下没有难写的代码" //群员签名
-    //}, …… ]
-    //  }
-    //}
     public function getGroupUser(){
         if (Request::isAjax()){
             $return = [
@@ -339,31 +327,61 @@ class Index extends Base
                 $return['msg'] = "消息参数错误";
                 return json($return);
             }
-
             // 如果是单聊
-            if ($data['to']['type'] == 'friend'){
-                // 得到会话ID
+            if ($data['to']['type'] == 'friend') {
+                $type = 'friend';
                 $code = getCode($data['to']['id']);
-                $message = [
-                    'code' => $code,
-                    'fs_userid' => $data['mine']['id'],
-                    'js_userid' => $data['to']['id'],
-                    'message'   => $data['mine']['content'],
-                    'state'     => 0,
-                    'sendtime'  => time(),
-                ];
-                $meg = MessageModel::create($message);
-                if (empty($meg)){
-                    $return['msg'] = "消息保存失败";
-                    return json($return);
-                }
-                // 得到消息ID
-                $cid = $meg->id;
-                $return['code'] = 0;
-                $return['msg']  = '保存成功';
-                $return['cid'] = $cid;
+            }elseif ($data['to']['type'] == 'group'){
+                $code = $data['to']['id'];
+                $type = 'group';
+            }else{
+                $return['msg'] = "消息参数错误";
                 return json($return);
             }
+
+            $message = [
+                'code' => $code,
+                'fs_userid' => $data['mine']['id'],
+                'js_userid' => $data['to']['id'],
+                'message'   => $data['mine']['content'],
+                'state'     => 0,
+                'sendtime'  => time(),
+                'type'      => $type
+            ];
+            $meg = MessageModel::create($message);
+            if (empty($meg)){
+                $return['msg'] = "消息保存失败";
+                return json($return);
+            }
+            $return['code'] = 0;
+            $return['msg']  = '保存成功';
+            $return['cid'] = $meg->id;
+            return json($return);
         }
+        return json(['code'=>1,'msg'=>'参数错误']);
+    }
+
+    /**
+     * 获取聊天消息
+     * @return array
+     */
+    public function getChatRecord(){
+        if (Request::isAjax()){
+            $data = Request::post('data');
+            if ($data['type'] == 'friend'){
+                $res = $this->getChatRecordFriend($data);
+            }
+            dd($data);
+        }
+    }
+
+    /**
+     * 获取聊天消息 单聊
+     * @param array $data
+     * @return array
+     */
+
+    public function getChatRecordFriend($data){
+
     }
 }
