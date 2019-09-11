@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login WebIM</title>
+    <title>WebIM</title>
     <meta name="description" content="">
     <meta name="author" content="templatemo">
     <link href="favicon.ico" type="image/vnd.microsoft.icon" rel="shortcut icon"/>
@@ -17,6 +17,7 @@
 </div>
 </body>
 <script type="text/javascript" src="/static/layui/dist/layui.js"></script>
+<script type="text/javascript" src="/static/js/socket.js"></script>
 <script type="text/javascript" src="/static/js/jquery-1.8.3.min.js"></script>
 <script>
     var  uid = "{$Think.session.user.id}";
@@ -29,13 +30,12 @@
             layimy = layim;
             // 绑定uid
             socket.send(JSON.stringify({
-                 type: 'reg' //随便定义，用于在服务端区分消息类型
+                type: 'reg' //随便定义，用于在服务端区分消息类型
                 ,data: {
-                     'uid':uid,
-                     'gid':groups
-                 }
+                    'uid':uid,
+                    'gid':groups
+                }
             }));
-
             layim.config({
                 init: {
                     url:  "{:url('index/Index/iniHomepage')}" //接口地址（返回的数据格式见下文）
@@ -85,11 +85,7 @@
             // localStorage.clear();
             // 监听发送消息
             layim.on('sendMessage', function(res){
-                console.log(res);
-                socket.send(JSON.stringify({
-                    type: 'chatMessage' //随便定义，用于在服务端区分消息类型
-                    ,data: res
-                }));
+                webIm.sendMessageSave(res);
             });
 
             //监听在线状态的切换事件
@@ -106,35 +102,9 @@
 
             // 监听到消息
             socket.onmessage = function(res){
-                res = JSON.parse(res.data);
-                console.log(res);
-                if(res.emit === 'chatMessage'){
-                    if (res.data.fromid != uid){ // 判断是否是自己发的
-                        layim.getMessage(res.data); //res.data即你发送消息传递的数据（阅读：监听发送的消息）
-                    }
-                }
+                webIm.webImonmessage(res);
             };
         })
     };
-
-
-var webIm = {
-    //  获取聊天页面
-    getChatRecord:function (uid) {
-        // layimy.getMessage({
-        //     username: "专家答疑" //消息来源用户名
-        //     ,avatar: "http://tp1.sinaimg.cn/1571889140/180/40030060651/1" //消息来源用户头像
-        //     ,id: uid//消息的来源ID（如果是私聊，则是用户id，如果是群聊，则是群组id）
-        //     ,type: "friend" //聊天窗口来源类型，从发送消息传递的to里面获取
-        //     ,content:'121212' //消息内容
-        //     ,cid: 121 //消息id，可不传。除非你要对消息进行一些操作（如撤回）
-        //     ,mine: false //是否我发送的消息，如果为true，则会显示在右方
-        //     ,fromid:2 //消息的发送者id（比如群组中的某个消息发送者），可用于自动解决浏览器多窗口时的一些问题
-        //     ,timestamp: 12156565656 * 1000 //服务端时间戳毫秒数。注意：如果你返回的是标准的 unix 时间戳，记得要 *1000
-        // });
-    },
-
-}
-
 </script>
 </html>
