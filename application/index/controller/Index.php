@@ -279,9 +279,23 @@ class Index extends Base
             return 'offline';
         }
         $userInfo = UserModel::where(['id'=>$user_id])
-            ->field('name,sign,avatar')
+            ->field('id,name,sign,avatar')
             ->find();
         return $userInfo;
+    }
+
+    /**
+     * 用户昵称
+     * @param int $user_id
+     * @return string
+     */
+    public function getUserName($user_id){
+        if (empty($user_id) || !is_numeric($user_id)){
+            return 'offline';
+        }
+        $userName= UserModel::where(['id'=>$user_id])
+            ->value('name');
+        return $userName;
     }
 
     /**
@@ -366,10 +380,18 @@ class Index extends Base
      * @return array
      */
     public function getChatRecord(){
+        $return['code'] = 0;
+        $return['msg']  = '';
+        $return['data'] = '';
+
         if (Request::isAjax()){
             $data = Request::post('data');
             if ($data['type'] == 'friend'){
                 $res = $this->getChatRecordFriend($data);
+                $return['code'] = 0;
+                $return['msg']  = '';
+                $return['data'] = $res;
+                return json($return);
             }
             dd($data);
         }
@@ -382,6 +404,49 @@ class Index extends Base
      */
 
     public function getChatRecordFriend($data){
+        // 获取会话标识
+        $code = getCode($data['id']);
+        if (empty($code)){
+           return false;
+        }
+        $message = MessageModel::where(['code'=>$code,'type'=>'friend'])
+            ->order('id','asc')
+            ->order('sendtime','asc')
+            ->select();
+
+        $messageArray = [];
+        foreach ($message as $value){
+            $mine = '';
+            $username = '';
+            $avatar = '';
+            $id = '';
+            $fromid = '';
+            if ($value['fs_userid'] != session('user.id')){
+                $UserNameInfo = $this->getUserNameInfo($data['id']);
+                $username = $UserNameInfo['name'];
+                $avatar = $UserNameInfo['avatar'];
+                $fromid = $value['fs_userid'];
+                $mine = false;
+            }else{
+                $UserNameInfo = $this->getUserNameInfo(session('user.id'));
+                $username = $UserNameInfo['name'];
+                $avatar = $UserNameInfo['avatar'];
+                $fromid = $value['fs_userid'];
+                $mine = true;
+            }
+            $messageArray[] = [
+                'username'   => $username,
+                'avatar'     => $avatar,
+                'id'         => $data['id'],
+                'type'       => $data['type'],
+                'content'    => $value['message'],
+                'cid'        => $value['id'],
+                'mine'       => $mine,
+                'fromid'     => $fromid,
+                'timestamp'  => time() * 1000
+            ];
+        }
+        return  $messageArray;
 
     }
 }

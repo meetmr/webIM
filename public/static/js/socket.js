@@ -37,18 +37,22 @@ var webIm = {
     },
     //  获取聊天页面
     getChatRecord:function (res) {
-        console.log(res);
+        localStorage.clear();
+
         im_$.ajax({
             url:getChatRecordUrl,
             type:"post",
             data:{data:res.data},
             dataType:"json",
             success:function (data) {
-                // console.log(data);
-                // if (data.code != 0){
-                //     layer.msg(data.msg);
-                //     return false;
-                // }
+                if (data.code != 0){
+                    layer.msg(data.msg);
+                    return false;
+                }
+                for (let i = 0;i<data.data.length;i++){
+                    console.log(data.data[i]);
+                    layimy.getMessage(data.data[i]);
+                }
                 // // 通知接收者
                 // socket.send(JSON.stringify({
                 //     type: 'chatMessage'//随便定义，用于在服务端区分消息类型
